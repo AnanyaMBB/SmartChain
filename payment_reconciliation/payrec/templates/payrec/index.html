@@ -1,0 +1,154 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+<section class="nav">
+    <div class="logo">
+        <img src="{% static 'images/logochain2.png' %}" alt="">
+    </div>
+
+    <div class="links">
+        <a id="createBtn">Create Product</a>
+        {% if loggedIn %}
+        <a href="logout">Logout</a>
+        {% else %}
+        <a href="login">Login</a>
+        <a href="register">Register</a>
+        {% endif %}     
+    </div>
+</section>
+
+<section class="container">
+    <section class="side">
+
+        <section class="main">
+            <div class="entitySearchBlock">
+                <!-- <a href="register">Register</a>
+                {% if loggedIn %}
+                <a href="logout">Logout</a>
+                {% else %}
+                <a href="login">Login</a>
+                {% endif %} -->
+                
+                <!-- <form action="">
+                    <label for="entitySearch">Add Entity: </label>
+                    <input name="entitySearch" type="text" class="entitySearch" placeholder="Enter Address">
+                    <input type="submit" value="Add">
+                </form> -->
+
+                <!-- <a id="createBtn">Create Product</a> -->
+            </div>
+    
+        </section>
+
+       <section class="progresssection">
+        <h1>In Progress</h1>
+        <div class="products">
+                <a class="inProgressLink" href=""></a>
+            <!-- <a> -->
+                {% for product in products %}
+                
+                <div class="inProgress">
+                    <a href="{% url 'product' product.0 %}"></a>
+
+                    <div class="productInfo">
+                        <p>{{product.0}}</p>
+                        <p>Number of Entities</p>
+                        <p>Status:</p>
+                    </div>
+                </div>
+            
+                {% endfor %}
+            <!-- </a> -->
+            <!-- <div class="inProgress">
+            </div>
+            <div class="inProgress">
+            </div> -->
+    </div>
+    </section> 
+        
+    <section class="donesection">
+        <h1>Done</h1>
+        <div class="doneproducts">
+            
+            <div class="done">
+                <p>Product Name</p>
+                <p>Number of Entities</p>
+                <p>Status:</p>
+            </div>
+
+            
+            <div class="done">
+            </div>
+            <div class="done">
+            </div>
+        </div>
+    </section>
+    </section>
+
+    <section class="productSection">
+            <p>Create a Product</p>
+            <form method="POST" action="{% url 'createProduct' %}" id="createProduct">
+                {% csrf_token %}
+                <label for="Product">Product: </label>
+                <input type="text" placeholder="Product Name" name="Product">
+                <input type="submit" value="Create">
+            </form>
+    </section>
+
+    {% if page == 'register' %}
+    <section class="inputForm">
+        <a href="/"><span>x</span></a>
+        <p>Create an Account</p>
+            <form method="POST" action="{% url 'createUser' %}"  id="createUser">
+                {% csrf_token %}
+                <label for="Product">Business Name</label>
+                <input type="text" placeholder="Business Name" name="business">
+                <label for="address">Wallet Address</label>
+                <input type="text" placeholder="Address" name="address">
+                <label for="Product">Password</label>
+                <input type="password" name="bPass" id="bPass" placeholder="Password">
+                <input type="submit" value="Create">
+            </form>
+    </section>
+    {% endif %}
+
+    {% if page == 'login' %}
+    <section class="inputForm">
+        <a href="/"><span>x</span></a>
+        <p>Login</p>
+            <form method="POST" action="{% url 'login' %}"  id="createUser">
+                {% csrf_token %}
+                <label for="address">Wallet Address</label>
+                <input type="text" placeholder="Address" name="address">
+                <label for="Product">Password</label>
+                <input type="password" name="bPass" id="bPass" placeholder="Password">
+                <input type="submit" value="Login">
+            </form>
+    </section>
+    {% endif %}
+    
+    
+
+    
+</section>
+
+<script>
+
+    // document.querySelector('.productSection').style.display='none';
+    document.addEventListener('DOMContentLoaded', ()=> {
+        
+        var createProduct = document.querySelector("#createBtn");
+        var productForm = document.querySelector('.productSection');
+        var hidden = true;
+        createProduct.addEventListener("click", () => {
+            productForm.style.display = productForm.style.display=='none' ? 'block' : 'none';
+        });
+    });
+
+    
+</script>
+<!-- <script>
+    
+</script> -->
+{% endblock %}

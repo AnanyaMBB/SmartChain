@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rec</title>
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+
+</head>
+<body>
+    <!-- <section class="nav">
+        <div class="logo">
+            <img src="{% static 'images/logochain2.png' %}" alt="">
+        </div>
+    
+        <div class="links">
+            <a href="login">Login</a>
+            <a href="register">Register</a>
+        </div>
+    </section> -->
+    {% block content %}
+    
+
+    <script>
+
+        document.querySelector('.productSection').style.backgroundColor='red';
+        document.addEventListener('DOMContentLoaded', ()=> {
+            
+            var createProduct = document.querySelector("#createBtn");
+            var productForm = document.querySelector('.productSection');
+            var hidden = true;
+            createProduct.addEventListener("click", () => {
+                productForm.style.display = block;
+            });
+        });
+    </script>
+    {% endblock %}
+    
+    
+
+
+</body>
+</html>

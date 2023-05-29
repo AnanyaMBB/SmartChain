@@ -1,0 +1,61 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+<section class="nav">
+    <div class="logo">
+        <img src="{% static 'images/logochain2.png' %}" alt="">
+    </div>
+
+    <div class="links">
+        <a href="login">Login</a>
+        <a href="register">Register</a>
+    </div>
+</section>
+<section class="homecontainer">
+    
+    <div class="fronttext">
+        <h1>Everyone Gets </h1>
+        
+        <h1>Their Share!</h1>
+    </div>
+    <div class="frontimg">
+        <div class="backdropimg">
+        </div>
+        
+    </div>
+</section>
+
+{% if page == 'login' %}
+    <section class="inputForm">
+        <a href="/"><span>x</span></a>
+        <p>Login</p>
+            <form method="POST" action="{% url 'login' %}"  id="createUser">
+                {% csrf_token %}
+                <label for="address">Wallet Address</label>
+                <input type="text" placeholder="Address" name="address">
+                <label for="Product">Password</label>
+                <input type="password" name="bPass" id="bPass" placeholder="Password">
+                <input type="submit" value="Login">
+            </form>
+    </section>
+    {% endif %}
+
+    {% if page == 'register' %}
+    <section class="inputForm">
+        <a href="/"><span>x</span></a>
+        <p>Create an Account</p>
+            <form method="POST" action="{% url 'createUser' %}"  id="createUser">
+                {% csrf_token %}
+                <label for="Product">Business Name</label>
+                <input type="text" placeholder="Business Name" name="business">
+                <label for="address">Wallet Address</label>
+                <input type="text" placeholder="Address" name="address">
+                <label for="Product">Password</label>
+                <input type="password" name="bPass" id="bPass" placeholder="Password">
+                <input type="submit" value="Create">
+            </form>
+    </section>
+    {% endif %}
+
+{% endblock %}

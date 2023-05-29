@@ -1,0 +1,344 @@
+{% extends 'main.html' %}
+
+{% load static %}
+{% block content %}
+
+<section class="nav">
+    <div class="logo">
+        <img src="{% static 'images/logochain2.png' %}" alt="">
+    </div>
+
+    <div class="links">
+        {% if loggedIn %}
+        <a href="{% url 'logout' %}">Logout</a>
+        {% else %}
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'createUser' %}">Register</a>
+        {% endif %}  
+    </div>
+</section>
+
+<section class="productContainer">
+<div class="addEntity">
+    <form method="POST" action="{% url 'product' pk %}" id="entityAdd">
+        {% csrf_token %}
+        <label for="entitySearch">Add Entity: </label>
+        <input name="entityAddress" type="text" class="entityAddress" placeholder="Enter Address">
+        <input type="submit" value="Add">
+    </form>
+</div>
+
+<div class="productEntityTable">
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th>Entity ID</th>
+            <th>Entity Name</th>
+            <!-- <th>Product ID</th>
+            <th>Product Name</th> -->
+            <th>Entity Address</th>
+            <th>Paid</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        {% for entities in involvedEntities %}
+        <tr>
+            <td>{{ entities.0 }}</td>
+            <td>{{ entities.1 }}</td>
+            <td>{{ entities.2 }}</td>
+            <td><img {% if entities.3 %} src="{% static 'images/check.png' %}" {% else %} src="{% static 'images/cross-sign (1).png' %}" {% endif %} alt=""></td>
+        </tr>
+
+        {% endfor %}
+        
+        <!-- and so on... -->
+    </tbody>
+</table>
+</div>
+
+<div class="pay">
+    <p>Total Amount: </p>
+    <p> {{ amount }} </p>
+    <button id="btnDeposit">Pay Now</button>
+</div>
+
+<div class="initiate">
+    <button class="btnReceived" id="btnReceived">Received! Initiate Payment</button>
+</div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+<script>
+    window.addEventListener('load', async () => {
+        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+        if (typeof window.ethereum !== 'undefined') {
+            window.web3 = new Web3(ethereum);
+            try {
+                // Request account access
+                await ethereum.enable();
+            } catch (error) {
+                // User denied account access
+                console.error("User denied account access")
+            }
+        } else if (window.web3) {
+            window.web3 = new Web3(web3.currentProvider);
+        } else {
+            console.log('No web3? You should consider trying MetaMask!');
+            window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        }
+
+        var contractABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_productID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "addPaymentPath",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_productID",
+				"type": "uint256"
+			}
+		],
+		"name": "deposit",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "_from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "PaymentSent",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_productID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_deliveryStage",
+				"type": "uint256"
+			}
+		],
+		"name": "sendPayments",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "entityDelivery",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "entityTotal",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_productID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "finishedPayment",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_productID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "getAmount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_productID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "getPaidAmount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]; // replace with your contract's ABI
+
+        var contractAddress = '0xb2E223a63D789F54a0a66Df9694a0a9defeAAca4'; // replace with your contract's address
+        var contractInstance = new web3.eth.Contract(contractABI, contractAddress);
+
+        document.getElementById('btnDeposit').addEventListener('click', async function() {
+            const amountToSend = web3.utils.toWei('2', "ether"); // 0.1 Ether, for instance. You need to adjust it as per your needs
+
+            // MetaMask will automatically inject the selected account
+            const accounts = await web3.eth.getAccounts();
+            const fromAccount = accounts[0];
+
+            contractInstance.methods.deposit({{pk}}).send({ 
+                from: fromAccount, 
+                value: amountToSend,
+                gas: 2000000, // gas limit, adjust as necessary
+                gasPrice: web3.utils.toWei('2', 'gwei') // gas price set as 2 gwei, adjust as necessary
+            }).then(function(tx) {
+                console.log(tx);
+            }).catch(function(error) {
+                console.log(error);
+            });
+
+        });
+
+        document.getElementById('btnReceived').addEventListener('click', async function() {
+        const productID = {{pk}}; // Replace with your actual product ID
+        const deliveryStage = 1; // Replace with your actual delivery stage
+
+        // MetaMask will automatically inject the selected account
+        const accounts = await web3.eth.getAccounts();
+        const fromAccount = accounts[0];
+
+        contractInstance.methods.sendPayments(productID, deliveryStage).send({ 
+            from: fromAccount, 
+            gas: 2000000, // gas limit, adjust as necessary
+            gasPrice: web3.utils.toWei('2', 'gwei') // gas price set as 2 gwei, adjust as necessary
+            }).then(function(tx) {
+                console.log(tx);
+            }).catch(function(error) {
+                console.log(error);
+            });
+        });
+
+    });
+</script>
+
+
+{% endblock %}
